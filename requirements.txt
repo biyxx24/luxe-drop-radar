@@ -1,0 +1,4 @@
+curl_cffi>=0.7
+PyYAML>=6.0
+# 可选：个别反爬很重的品牌要用真浏览器时再装
+#   pip install playwright && playwright install chromium

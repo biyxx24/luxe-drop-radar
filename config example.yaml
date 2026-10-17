@@ -1,0 +1,132 @@
+# ════════════════════════════════════════════════════════════
+#  奢侈品官网上新监控 —— 配置文件
+#  改完保存即可，下次启动生效（run 正在跑的话先 Ctrl+C 再重新启动）
+# ════════════════════════════════════════════════════════════
+
+telegram:
+  bot_token: ""        # 找 @BotFather 建 bot 后拿到的 token，形如 123456:ABC-xyz
+  chat_id: ""          # 运行 python monitor.py chat-id 查到的数字；多人接收可写成列表 ["111", "222"]
+
+settings:
+  interval_minutes: 10           # 每几分钟检查一轮（别低于 5，太频繁容易被封）
+  sitemap_interval_minutes: 60   # sitemap 比较大，单独隔久一点
+  request_delay_seconds: 1.5     # 同一个网站两次请求之间的间隔（秒）
+
+  gender: men                   # all / men / women
+  my_sizes: ["M"]                   # 你的码，推送里会标出"你的码有货"。例：["M", "48", "IT 48", "42", "US 9"]
+  only_my_sizes: false           # true = 只推你的码有货的商品
+
+  # 只要某些品类：把下面这行取消注释（只推外套和鞋的例子）
+  # include_keywords: [coat, jacket, parka, puffer, down, blazer, overcoat, trench, bomber, gilet, vest, shoe, sneaker, trainer, boot, loafer, derby, oxford, mule, sandal, slide, pump, heel, flat]
+  include_keywords: []
+
+  # 不要的品类（标题/类别/链接里出现这些词就不推）。默认只看衣服+鞋，排除包、首饰、香水等
+  exclude_keywords: [bag, tote, wallet, card holder, cardholder, pouch, clutch, backpack, belt,
+                     jewelry, jewellery, necklace, bracelet, earring, ring, brooch, fragrance, perfume,
+                     parfum, candle, sunglasses, eyewear, keyring, key ring, keychain, charm,
+                     scarf, scarves, hat, beanie, glove, umbrella, phone case, gift card, kids, beauty, lipstick]
+
+  max_cards_per_brand: 15        # 一个品牌一轮上新超过这么多件，改发一条汇总清单
+  max_new_urls_per_cycle: 300    # 一次冒出超过这么多新链接，视为网站改版，静默记录并提醒你
+  fail_alert_after: 6            # 某品牌连续失败几轮后提醒你
+  browser_headless: true         # 用浏览器模式时是否隐藏浏览器窗口（被拦时可改 false 试试）
+
+# ════════════════════════════════════════════════════════════
+#  品牌清单（美国站）
+#  每个品牌最少只要 name + url，程序会自动判断用哪种抓法：
+#    · Shopify 站：直接读 /products.json（最快最全，含每个码的库存）
+#    · 其他站：自动找 "New In" 页面 + 读 sitemap，发现新链接后去商品页读价格/图片/码数
+#  可选字段：
+#    url_include: ["/en-us/"]   只要包含这些片段的链接（用来锁定美国站，probe 会打印真实链接，不对就改）
+#    new_in: auto               自动找 New In 页；也可以手填网址列表，例：["https://xxx.com/en-us/women/new-arrivals"]
+#    sitemap: false             不读 sitemap
+#    sitemap_include: [product] 只读文件名含这些词的子 sitemap
+#    product_pattern: "正则"     New In 页里哪些链接算商品（自动识别不准时才填）
+#    browser: true              被反爬拦时改用真浏览器（需先装 playwright，见 README）
+#    enabled: false             暂时不监控这个品牌
+# ════════════════════════════════════════════════════════════
+brands:
+  # —— A 档：Shopify（最好抓）—————————————————————————————
+  - name: Khaite
+    url: https://khaite.com              # 已核实 Shopify Plus
+  - name: Totême
+    url: https://toteme.com              # 已核实 Shopify Plus
+  - name: Lemaire
+    url: https://www.lemaire.fr          # 用 Shopify 应用，大概率 Shopify
+  - name: The Row
+    url: https://www.therow.com
+  - name: Fear of God
+    url: https://fearofgod.com
+  - name: Amiri
+    url: https://amiri.com
+  - name: Casablanca
+    url: https://casablancaparis.com
+  - name: Gabriela Hearst
+    url: https://www.gabrielahearst.com
+  - name: Wales Bonner
+    url: https://walesbonner.net
+  - name: Simone Rocha
+    url: https://simonerocha.com
+
+  # —— 平台不确定，交给程序自动判断 ———————————————————————
+  - name: Jacquemus
+    url: https://www.jacquemus.com
+  - name: Dries Van Noten
+    url: https://www.driesvannoten.com
+
+  # —— B 档：Kering 等大牌（Salesforce Commerce Cloud）走 New In + sitemap ——
+  - name: Saint Laurent
+    url: https://www.ysl.com             # 已核实 SFCC
+    url_include: ["/en-us/"]
+  - name: Balenciaga
+    url: https://www.balenciaga.com      # 已核实 SFCC
+    url_include: ["/en-us/"]
+  - name: Bottega Veneta
+    url: https://www.bottegaveneta.com   # 已核实 SFCC
+    url_include: ["/en-us/"]
+  - name: Alexander McQueen
+    url: https://www.alexandermcqueen.com  # 已核实 SFCC
+    url_include: ["/en-us/"]
+  - name: Moncler
+    url: https://www.moncler.com
+    url_include: ["/en-us/"]
+  - name: Maison Margiela
+    url: https://www.maisonmargiela.com
+    url_include: ["/en-us/"]
+  - name: Loewe
+    url: https://www.loewe.com
+    url_include: ["/usa/en/"]
+
+  # —— C 档：反爬很重，先放一个当试验 ———————————————————————
+  - name: Gucci
+    url: https://www.gucci.com
+    url_include: ["/us/en/"]
+    # browser: true                    # probe 显示被拦的话，打开这行
+
+  # —— 备选（把 enabled 改成 true 或删掉那一行即可启用）————————————
+  - name: Prada
+    url: https://www.prada.com
+    url_include: ["/us/en/"]
+    enabled: false
+  - name: Valentino
+    url: https://www.valentino.com
+    url_include: ["/en-us/"]
+    enabled: false
+  - name: Givenchy
+    url: https://www.givenchy.com
+    url_include: ["/us/en/"]
+    enabled: false
+  - name: Burberry
+    url: https://us.burberry.com
+    enabled: false
+  - name: Thom Browne
+    url: https://www.thombrowne.com
+    enabled: false
+  - name: Brunello Cucinelli
+    url: https://shop.brunellocucinelli.com
+    url_include: ["/en-us/"]
+    enabled: false
+  - name: Zegna
+    url: https://www.zegna.com
+    url_include: ["/us-en/"]
+    enabled: false
